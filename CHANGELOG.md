@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.1.1
+
+- **Breaking** (for hosts already migrated): `Np.Run.operator_id` is
+  now `:string` instead of `:binary_id`. Hosts whose user IDs aren't
+  UUIDs (integers, ULIDs, opaque tokens) can finally store an
+  operator id. Hosts that already created the `acceptance_runs`
+  table with a `uuid` column should ALTER it to `varchar` —
+  one-line migration.
+- `mix np.gen.migration` now namespaces the generated migration
+  module under the host's repo (e.g.
+  `MyApp.Repo.Migrations.CreateAcceptanceRuns`), matching Phoenix
+  convention. Previously it generated `Repo.Migrations.…` which
+  collided with most hosts.
+- Tests now cover the operator_id type and the migration
+  generator's template (20 tests total).
+
 ## 0.1.0 — unreleased
 
 Initial release.

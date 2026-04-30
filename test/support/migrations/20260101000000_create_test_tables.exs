@@ -27,7 +27,7 @@ defmodule Np.TestRepo.Migrations.CreateTestTables do
       add :bindings_snapshot, :map, default: %{}, null: false
       add :postcondition_results, {:array, :map}, default: []
       add :invariant_results, {:array, :map}, default: []
-      add :operator_id, :binary_id
+      add :operator_id, :string
       add :notes, :text
       timestamps()
     end

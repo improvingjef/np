@@ -8,9 +8,12 @@ defmodule Np.Run do
   than persisting the structs — the schema is for humans reading the
   log, not for round-tripping the constraint language.
 
-  `operator_id` is a free-form binary id (no `belongs_to`) so this
-  schema doesn't take on a hard dep on the host's user schema. Hosts
-  can add their own `belongs_to` in a thin wrapper if they want.
+  `operator_id` is a free-form **string** (no `belongs_to`), so this
+  schema works regardless of how the host represents user identifiers
+  — UUID, integer, ULID, opaque token, doesn't matter. Hosts cast
+  their own id to string when calling `start_run/5`. If a host wants
+  strict typing, they can add a `belongs_to` on a thin wrapper schema
+  pointing at the same table.
 
   Migration: `mix np.gen.migration`.
   """
@@ -29,7 +32,7 @@ defmodule Np.Run do
     field :bindings_snapshot, :map, default: %{}
     field :postcondition_results, {:array, :map}, default: []
     field :invariant_results, {:array, :map}, default: []
-    field :operator_id, :binary_id
+    field :operator_id, :string
     field :notes, :string
 
     timestamps()

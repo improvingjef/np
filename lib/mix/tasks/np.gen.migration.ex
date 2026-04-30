@@ -33,7 +33,7 @@ defmodule Mix.Tasks.Np.Gen.Migration do
       Mix.raise("migration already exists: #{path}")
     end
 
-    File.write!(path, migration_source())
+    File.write!(path, migration_source(repo))
     Mix.shell().info([:green, "* creating ", :reset, Path.relative_to_cwd(path)])
     :ok
   end
@@ -64,9 +64,16 @@ defmodule Mix.Tasks.Np.Gen.Migration do
     |> IO.iodata_to_binary()
   end
 
-  defp migration_source do
+  # Build the migration source string. The module name follows Phoenix
+  # convention: `<HostApp.Repo>.Migrations.CreateAcceptanceRuns`.
+  # Public-but-undocumented so tests can exercise the template
+  # without spinning up a full Mix project.
+  @doc false
+  def migration_source(repo) do
+    module_name = "#{inspect(repo)}.Migrations.CreateAcceptanceRuns"
+
     """
-    defmodule Repo.Migrations.CreateAcceptanceRuns do
+    defmodule #{module_name} do
       @moduledoc \"\"\"
       Persisted record of every Np UAT harness run.
       \"\"\"
@@ -83,7 +90,9 @@ defmodule Mix.Tasks.Np.Gen.Migration do
           add :bindings_snapshot, :map, default: %{}, null: false
           add :postcondition_results, {:array, :map}, default: []
           add :invariant_results, {:array, :map}, default: []
-          add :operator_id, :binary_id
+          # Free-form string so hosts with integer/UUID/ULID/opaque user
+          # ids can all use it without an Ecto type mismatch.
+          add :operator_id, :string
           add :notes, :text
           timestamps()
         end

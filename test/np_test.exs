@@ -105,6 +105,23 @@ defmodule NpTest do
         "reason" => nil
       }]
     end
+
+    test "operator_id accepts non-UUID strings (integer ids, ULIDs, opaque tokens)" do
+      ctx = Np.RunContext.new(runner: :sandbox)
+
+      # An integer id (revivehub-style) cast to string by the host.
+      {:ok, run} = Np.start_run("x", :sandbox, ctx, %{}, "42")
+      assert run.operator_id == "42"
+      assert Np.get_run(run.id).operator_id == "42"
+
+      # A ULID-shaped token.
+      {:ok, run2} = Np.start_run("x", :sandbox, ctx, %{}, "01HX7K3JRWY8N3M5W6P9F1V2Q4")
+      assert run2.operator_id == "01HX7K3JRWY8N3M5W6P9F1V2Q4"
+
+      # nil still works (the common case where the runner is unattended).
+      {:ok, run3} = Np.start_run("x", :sandbox, ctx, %{}, nil)
+      assert run3.operator_id == nil
+    end
   end
 
   describe "predicate vocabulary — sanity check each evaluator" do
