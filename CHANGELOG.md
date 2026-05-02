@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.1.2
+
+- `Interpreter.setup/2` accepts a `:seed_bindings` map that pre-
+  populates the bindings before the precondition list runs. `Bind`
+  elements whose name is already in the seed are skipped — they're
+  considered "already materialised by the host". This is how a host
+  app grafts the operator's identity onto a sandbox run (e.g. the
+  `:tenant` and `:team_leader` bindings become the operator's own
+  tenant + the operator themselves) so the resulting state is visible
+  to the operator's session and gated UI affordances render
+  correctly.
+
 ## 0.1.1
 
 - **Breaking** (for hosts already migrated): `Np.Run.operator_id` is

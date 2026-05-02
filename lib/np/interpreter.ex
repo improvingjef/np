@@ -97,9 +97,10 @@ defmodule Np.Interpreter do
   """
   def setup(preconditions, opts \\ []) when is_list(preconditions) do
     runner = Keyword.get(opts, :runner, :sandbox)
+    seed = Keyword.get(opts, :seed_bindings, %{})
 
     try do
-      do_setup(preconditions, %{}, runner, [], opts)
+      do_setup(preconditions, seed, runner, [], opts)
     rescue
       e -> {:error, {:setup_failed, Exception.message(e)}}
     end
@@ -110,10 +111,16 @@ defmodule Np.Interpreter do
   defp do_setup([], bindings, _runner, picks_pending, _opts),
     do: {:picks_required, bindings, Enum.reverse(picks_pending)}
 
-  defp do_setup([%Bind{} = bind | rest], bindings, runner, picks_pending, opts) do
+  defp do_setup([%Bind{name: name} = bind | rest], bindings, runner, picks_pending, opts) do
     effective_mode = effective_mode(bind.mode, runner)
 
     cond do
+      Map.has_key?(bindings, name) ->
+        # Pre-seeded by the host (e.g. the LV grafted in the operator
+        # and their tenant before calling setup). Skip materialisation;
+        # use what's already there.
+        do_setup(rest, bindings, runner, picks_pending, opts)
+
       effective_mode == :pick ->
         do_setup(rest, bindings, runner, [bind | picks_pending], opts)
 
